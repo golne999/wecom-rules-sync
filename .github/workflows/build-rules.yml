@@ -1,0 +1,82 @@
+name: Smart Build WeCom Rules
+
+on:
+  schedule:
+    - cron: '0 2 * * *' 
+  workflow_dispatch: 
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: main # 确保我们拉取的是 main 分支以便更新状态文件
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Parse and Diff WeCom Data
+        id: parse
+        run: python parse_wecom.py
+
+      # 如果有变化，将新的文本状态文件提交到 main 分支
+      - name: Commit new state to main
+        if: steps.parse.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ips.txt domains.txt
+          # [skip ci] 防止触发其他不必要的 workflow
+          git commit -m "chore: update WeCom rules state [skip ci]" || echo "No changes to commit"
+          git push origin main
+
+      - name: Install sing-box
+        if: steps.parse.outputs.changed == 'true'
+        run: |
+          SINGBOX_LATEST=$(curl -s https://api.github.com/repos/SagerNet/sing-box/releases/latest | grep '"tag_name":' | sed -E 's/.*"v?([^"]+)".*/\1/')
+          wget -qO sing-box.tar.gz "https://github.com/SagerNet/sing-box/releases/download/v${SINGBOX_LATEST}/sing-box-${SINGBOX_LATEST}-linux-amd64.tar.gz"
+          tar -xzf sing-box.tar.gz
+          sudo mv sing-box-${SINGBOX_LATEST}-linux-amd64/sing-box /usr/local/bin/
+          
+      - name: Install mihomo
+        if: steps.parse.outputs.changed == 'true'
+        run: |
+          MIHOMO_LATEST=$(curl -s https://api.github.com/repos/MetaCubeX/mihomo/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+          wget -qO mihomo.gz "https://github.com/MetaCubeX/mihomo/releases/download/${MIHOMO_LATEST}/mihomo-linux-amd64-${MIHOMO_LATEST}.gz"
+          gunzip mihomo.gz
+          chmod +x mihomo
+          sudo mv mihomo /usr/local/bin/
+
+      - name: Compile Rulesets
+        if: steps.parse.outputs.changed == 'true'
+        run: |
+          sing-box rule-set compile --output wecom.srs wecom.json
+          mihomo compile wecom.yaml
+
+      - name: Push binaries to rule-release branch
+        if: steps.parse.outputs.changed == 'true'
+        run: |
+          mkdir -p release
+          mv wecom.srs release/
+          mv wecom.mrs release/
+          mv wecom.json release/
+          mv wecom.yaml release/
+          
+          cd release
+          git init
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          git checkout -b rule-release
+          git add .
+          git commit -m "Auto update WeCom rules $(date +'%Y-%m-%d %H:%M:%S')"
+          
+          git push -f "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" rule-release
