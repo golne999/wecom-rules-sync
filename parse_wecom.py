@@ -111,15 +111,17 @@ def main():
         json.dump(singbox_rules, f, indent=2)
 
     # 生成 Mihomo YAML
-    with open("wecom.yaml", "w", encoding="utf-8") as f:
+    with open("wecom-domain.yaml", "w", encoding="utf-8") as f:
         f.write("payload:\n")
         for d in sorted_domains:
-            f.write(f"  - DOMAIN-SUFFIX,{d}\n")
+            # 使用 +. 达到等同于 DOMAIN-SUFFIX 的效果
+            f.write(f"  - '+.{d}'\n")
+
+    # ====== 3. 生成 Mihomo YAML (IP 专用) ======
+    with open("wecom-ip.yaml", "w", encoding="utf-8") as f:
+        f.write("payload:\n")
         for ip in sorted_ips:
-            if ':' in ip:
-                f.write(f"  - IP-CIDR6,{ip}\n")
-            else:
-                f.write(f"  - IP-CIDR,{ip}\n")
+            f.write(f"  - '{ip}'\n")
 
 if __name__ == "__main__":
     main()

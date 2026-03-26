@@ -58,17 +58,24 @@ jobs:
       - name: Compile Rulesets
         if: steps.parse.outputs.changed == 'true'
         run: |
+          # 编译 sing-box srs
           sing-box rule-set compile --output wecom.srs wecom.json
-          mihomo compile wecom.yaml
+          
+          # 正确的 mihomo mrs 转换命令
+          mihomo convert-ruleset domain yaml wecom-domain.yaml wecom-domain.mrs
+          mihomo convert-ruleset ipcidr yaml wecom-ip.yaml wecom-ip.mrs
 
       - name: Push binaries to rule-release branch
         if: steps.parse.outputs.changed == 'true'
         run: |
           mkdir -p release
           mv wecom.srs release/
-          mv wecom.mrs release/
+          mv wecom-domain.mrs release/
+          mv wecom-ip.mrs release/
+          # 保留明文文件
           mv wecom.json release/
-          mv wecom.yaml release/
+          mv wecom-domain.yaml release/
+          mv wecom-ip.yaml release/
           
           cd release
           git init
