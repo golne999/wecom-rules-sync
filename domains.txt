@@ -10,6 +10,7 @@ badjs.weixinbridge.com
 captcha.gtimg.com
 cdn-go.cn
 cdn.addon.tencentsuite.com
+claw.work.weixin.qq.com
 cloud.tim.qq.com
 conn.meeting.work.weixin.qq.com
 connquic.meeting.work.weixin.qq.com
@@ -64,9 +65,12 @@ njc-upload.ftn.qq.com
 open.wecom.tencent.com
 open.weixin.qq.com
 open.work.weixin.qq.com
+openws.work.weixin.qq.com
 oss.work.weixin.qq.com
 otheve.beacon.qq.com
 p.qlogo.cn
+page.weixin.qq.com
+pages.weixin.qq.com
 poll.exmail.qq.com
 pop.exmail.qq.com
 preview.qpic.cn
