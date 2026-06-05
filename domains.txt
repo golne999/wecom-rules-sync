@@ -1,5 +1,6 @@
 aedns.weixin.qq.com
 aegis.qq.com
+agent.work.weixin.qq.com
 alloyreport.cdn-go.cn
 alloyteam-cdn.cdn-go.cn
 api.exmail.qq.com
@@ -10,7 +11,6 @@ badjs.weixinbridge.com
 captcha.gtimg.com
 cdn-go.cn
 cdn.addon.tencentsuite.com
-claw.work.weixin.qq.com
 cloud.tim.qq.com
 conn.meeting.work.weixin.qq.com
 connquic.meeting.work.weixin.qq.com
